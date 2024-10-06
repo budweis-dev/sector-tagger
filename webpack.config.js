@@ -7,15 +7,15 @@ module.exports = {
   output: {
     filename: 'sector-tagger.js',
     path: path.resolve(__dirname, 'dist'),
-    library: 'SectorTagger', // Umožní přístup k třídám z globálního scope
-    libraryTarget: 'umd', // UMD formát pro podporu AMD, CommonJS a globálního scope
+    library: 'SectorTagger', 
+    libraryTarget: 'umd', 
     globalObject: 'this',
   },
   module: {
     rules: [
       {
         test: /\.css$/i,
-        use: ['style-loader', 'css-loader'], // Načítání CSS
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },

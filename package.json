@@ -8,7 +8,7 @@
         "build-web": "webpack",
         "build": "npm run build-rol && npm run build-web -- --mode production"
     },
-    "author": "Your Name",
+    "author": "Aleš Pázner (Pázny)",
     "license": "MIT",
     "devDependencies": {
         "css-loader": "^6.5.1",
