@@ -41,3 +41,6 @@ const app = new SectorTaggerApp(container, 'uniqueAppId');
   const app = new SectorTagger.SectorTaggerApp(container, 'uniqueAppId');
 </script>
 ```
+
+
+## Demo app: [https://budweis-dev.github.io/sector-tagger/](https://budweis-dev.github.io/sector-tagger/example.html)
