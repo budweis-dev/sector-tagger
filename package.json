@@ -1,0 +1,22 @@
+{
+    "name": "sector-tagger",
+    "version": "1.0.0",
+    "description": "A canvas sector tagging library supporting rectangles, circles, and polygons.",
+    "main": "src/index.js",
+    "scripts": {
+        "build-rol": "rollup -c",
+        "build-web": "webpack",
+        "build": "npm run build-rol && npm run build-web -- --mode production"
+    },
+    "author": "Your Name",
+    "license": "MIT",
+    "devDependencies": {
+        "css-loader": "^6.5.1",
+        "rollup": "^2.79.2",
+        "rollup-plugin-css-only": "^4.5.2",
+        "rollup-plugin-terser": "^7.0.2",
+        "style-loader": "^3.3.1",
+        "webpack": "^5.64.4",
+        "webpack-cli": "^4.9.1"
+    }
+}

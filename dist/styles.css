@@ -1,0 +1,177 @@
+#floating-window form {
+    margin-bottom: 10px;
+}
+
+#overlay, #grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+#coordinate-tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 3px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+    max-width: 200px;
+}
+
+#sector-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#sector-list li {
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+}
+
+#sector-list li:hover,
+#sector-list li.highlight {
+    background-color: #f0f0f0;
+}
+#sector-list li.selected {
+    border-bottom: 1px solid gray;
+}
+
+.delete-button {
+    background-color: #ff4d4d;
+    border: none;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.delete-button:hover {
+    background-color: #ff1a1a;
+}
+
+
+#sector-table tr{
+    vertical-align: middle;
+}
+
+#sector-table tr.highlight{
+    transition: 0.2s all;
+    box-shadow: 5px -5px 20px 9px #8d8d8d6e;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+/* Styles for the sector dialog */
+#sector-dialog {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgb(247, 247, 247);
+    box-shadow: rgb(133 132 132 / 77%) 4px -6px 20px 7px;
+    padding: 20px;
+    z-index: 3;
+}
+
+#sector-dialog h4 {
+    margin-top: 0;
+}
+
+.sector-tags {
+    font-size: 80%;
+    display: flex;
+    max-width: 130px;
+    overflow: auto;
+    padding: 5px;
+}
+
+.sector-tag {
+    background-color: #e0e0e0;
+    color: #333;
+    border-radius: 3px;
+    padding: 2px 5px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+#tag-filter-input {
+    width: 90%;
+    margin-bottom: 10px;
+}
+
+
+#drawingCharacteristicsLabel{
+    border-collapse: collapse;
+    height: 30px;
+}
+
+#drawingCharacteristicsLabel .characteristicsLabel{
+    font-style:italic;
+    padding: 0;
+}
+
+#drawingCharacteristicsLabel .characteristicsLegend{
+    display: inline-block;
+    border: 1px solid lightgray;
+    padding: 0;
+    height:15px;
+    width: 15px;
+    margin-left: 10px;
+}
+
+#rightDrawingPanel {
+    position: fixed;
+    width: 600px;
+    right: 0;
+    box-shadow: rgb(133 132 132 / 77%) 4px -6px 20px 7px;
+    background: rgb(247, 247, 247);
+    top: 80px;
+    z-index: 777;
+    transition: 0.4s all;
+    padding: 0;
+    margin: 0;
+    max-height: 820px;
+    overflow: auto;
+}
+
+#rightDrawingPanel.hidden {
+    right: -570px;
+}
+
+#rightDrawingPanel .panel-header {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid gray;
+    padding: 5px;
+}
+
+#rightDrawingPanel.hidden > .cart-content,
+#rightDrawingPanel.hidden .card-footer {
+    display: none;
+}
+
+.quota-table-row > td{
+    line-height: 25px !important;
+    padding: 2px 6px !important;
+}
+
+#drawingWrapper {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: calc(100vh - 145px)
+}

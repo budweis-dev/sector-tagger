@@ -1,0 +1,26 @@
+export default class CoordinateTooltip {
+    constructor(app) {
+        this.app = app;
+        this.tooltip = document.createElement('div');
+        this.tooltip.classList.add('coordinate-tooltip');
+        this.tooltip.style.position = 'absolute';
+        this.tooltip.style.display = 'none';
+        this.tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        this.tooltip.style.color = 'white';
+        this.tooltip.style.padding = '5px';
+        this.tooltip.style.borderRadius = '5px';
+        this.tooltip.style.pointerEvents = 'none';
+        this.app.container.appendChild(this.tooltip);
+    }
+
+    show(x, y, text) {
+        this.tooltip.textContent = text;
+        this.tooltip.style.left = `${x}px`;
+        this.tooltip.style.top = `${y}px`;
+        this.tooltip.style.display = 'block';
+    }
+
+    hide() {
+        this.tooltip.style.display = 'none';
+    }
+}

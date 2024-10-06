@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Sector Tagger Demo</title>
+  <style>
+    /* Můžete přímo vložit obsah styles.css nebo odkazovat na soubor */
+    @import url('dist/styles.css');
+    .sector-tagger-container {
+      width: 800px;
+      height: 600px;
+      border: 1px solid #ccc;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+<div id="sector-tagger-app" class="sector-tagger-container"></div>
+
+<!-- Načtení zbuildovaného JS souboru -->
+<script src="dist/sector-tagger.js"></script>
+<script>
+  // Inicializace aplikace
+  const container = document.getElementById('sector-tagger-app');
+  const app = new SectorTagger.SectorTaggerApp(container, 'uniqueAppId');
+</script>
+
+</body>
+</html>
