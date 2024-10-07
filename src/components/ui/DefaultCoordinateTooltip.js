@@ -1,15 +1,15 @@
-export default class CoordinateTooltip {
+import UIComponent from './UIComponent';
+
+export default class DefaultCoordinateTooltip extends UIComponent {
   constructor(app) {
-    this.app = app;
+    super(app);
+    this.render();
+  }
+
+  render() {
     this.tooltip = document.createElement('div');
-    this.tooltip.className = 'coordinate-tooltip';
     this.tooltip.style.position = 'absolute';
     this.tooltip.style.display = 'none';
-    this.tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    this.tooltip.style.color = 'white';
-    this.tooltip.style.padding = '5px';
-    this.tooltip.style.borderRadius = '3px';
-    this.tooltip.style.zIndex = '1000';
     this.app.container.appendChild(this.tooltip);
   }
 

@@ -41,3 +41,50 @@ const app = new SectorTaggerApp(container, 'uniqueAppId');
   const app = new SectorTagger.SectorTaggerApp(container, 'uniqueAppId');
 </script>
 ```
+
+## Usage - custom UI
+
+1. Create custom UI components that extend the default ones.
+```js
+class CustomMainCanvas extends DefaultMainCanvas {
+    constructor(app) {
+        super(app);
+    }
+}
+class CustomSectorDialog extends DefaultSectorDialog {
+    constructor(app) {
+        super(app);
+    }
+    render() {
+        super.render();
+        // your code here
+    }
+}
+class CustomPanel extends DefaultRightPanel {
+    constructor(app) {
+        super(app);
+    }
+    render() {
+        super.render();
+        this.panel = document.querySelector('#custom-right-panel');
+        this.panel.innerHTML = '<h1>Custom Right Panel</h1>';
+        // your code here
+    }
+}
+```
+2. Prepare the container and add the custom UI components (directly into HTML or generate them in JS)
+```html
+<div id="sector-tagger-app" class="sector-tagger-container"></div>
+<div id="custom-right-panel" class="right-panel"></div>
+```
+
+3. Pass them into the app.
+```js
+const container = document.getElementById('sector-tagger-app');
+const app = new SectorTaggerApp(container, 'uniqueAppId', {
+    mainCanvas: new CustomMainCanvas(app),
+    overlayCanvas: new CustomOverlayCanvas(app),
+    sectorDialog: new CustomSectorDialog(app),
+    rightPanel: new CustomRightPanel(app),
+});
+```

@@ -1,13 +1,21 @@
-export default class OverlayCanvas {
-  constructor(container, width, height) {
+import UIComponent from './UIComponent';
+
+export default class DefaultOverlayCanvas extends UIComponent {
+  constructor(app) {
+    super(app);
+    this.render();
+  }
+
+  render() {
     this.canvas = document.createElement('canvas');
+    this.canvas.id = 'overlayCanvas';
+    this.canvas.width = this.app.container.clientWidth;
+    this.canvas.height = this.app.container.clientHeight;
     this.canvas.style.position = 'absolute';
     this.canvas.style.top = '0';
     this.canvas.style.left = '0';
-    this.canvas.width = width;
-    this.canvas.height = height;
     this.ctx = this.canvas.getContext('2d');
-    container.appendChild(this.canvas);
+    this.app.container.appendChild(this.canvas);
   }
 
   clear() {
@@ -75,5 +83,13 @@ export default class OverlayCanvas {
         this.ctx.restore();
       }
     });
+  }
+
+  addMouseListeners(listeners) {
+    this.canvas.addEventListener('mousedown', listeners.onMouseDown);
+    this.canvas.addEventListener('mousemove', listeners.onMouseMove);
+    this.canvas.addEventListener('mouseup', listeners.onMouseUp);
+    this.canvas.addEventListener('click', listeners.onClick);
+    this.canvas.addEventListener('wheel', listeners.onWheel);
   }
 }

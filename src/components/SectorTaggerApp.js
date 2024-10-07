@@ -1,16 +1,15 @@
-import MainCanvas from './MainCanvas';
-import OverlayCanvas from './OverlayCanvas';
+import DefaultMainCanvas from './ui/DefaultMainCanvas';
+import DefaultOverlayCanvas from './ui/DefaultOverlayCanvas';
+import DefaultSectorDialog from './ui/DefaultSectorDialog';
+import DefaultRightPanel from './ui/DefaultRightPanel';
+import DefaultCoordinateTooltip from './ui/DefaultCoordinateTooltip';
+import DefaultDrawingShapeSelector from './ui/DefaultDrawingShapeSelector';
 import RectangleSector from '../shapes/RectangleSector';
 import CircleSector from '../shapes/CircleSector';
 import PolygonSector from '../shapes/PolygonSector';
-import SectorDialog from './SectorDialog';
-import RightPanel from './RightPanel';
-import CoordinateTooltip from './CoordinateTooltip';
-import DrawingShapeSelector from './DrawingShapeSelector.js';
-import Sector from '../shapes/Sector';
 
 export default class SectorTaggerApp {
-  constructor(containerElement, appId, fetchImgUrl, fetchSectorsUrl, onAddToCartCallback) {
+  constructor(containerElement, appId, fetchImgUrl, fetchSectorsUrl, onAddToCartCallback, uiComponents = {}) {
     this.container = containerElement;
     this.appId = appId;
 
@@ -43,85 +42,72 @@ export default class SectorTaggerApp {
     this.fetchSectorsUrl = fetchSectorsUrl;
     this.onAddToCartCallback = onAddToCartCallback;
 
-    this.drawingMode = 'circle'; // 'rectangle', 'circle', 'polygon'
+    this.drawingMode = 'circle';
     this.isDrawingPolygon = false;
     this.polygonPoints = [];
 
-    // Create canvas elements
-    this.mainCanvas = new MainCanvas(this.container, this.container.clientWidth, this.container.clientHeight);
-    this.overlayCanvas = new OverlayCanvas(this.container, this.container.clientWidth, this.container.clientHeight);
+    // UI components
+    this.ui = {
+      mainCanvas: uiComponents.mainCanvas || new DefaultMainCanvas(this),
+      overlayCanvas: uiComponents.overlayCanvas || new DefaultOverlayCanvas(this),
+      sectorDialog: uiComponents.sectorDialog || new DefaultSectorDialog(this),
+      rightPanel: uiComponents.rightPanel || new DefaultRightPanel(this),
+      coordinateTooltip: uiComponents.coordinateTooltip || new DefaultCoordinateTooltip(this),
+      drawingShapeSelector: uiComponents.drawingShapeSelector || new DefaultDrawingShapeSelector(this)
+    };
 
-    // Create panel, dialog, tooltip, drawing shape selector
-    this.sectorDialog = new SectorDialog(this);
-    this.rightPanel = new RightPanel(this);
-    this.sectorTable = this.rightPanel.sectorTable;
-    this.coordinateTooltip = new CoordinateTooltip(this);
-    this.drawingShapeSelector = new DrawingShapeSelector(this);
-
-    // Initialize event listeners
     this.initEventListeners();
     this.initKeyboardShortcuts();
   }
 
   initEventListeners() {
-    // Mouse events
-    this.overlayCanvas.canvas.addEventListener('mousedown', e => this.onMouseDown(e));
-    this.overlayCanvas.canvas.addEventListener('mousemove', e => this.onMouseMove(e));
-    this.overlayCanvas.canvas.addEventListener('mouseup', e => this.onMouseUp(e));
-    this.overlayCanvas.canvas.addEventListener('click', e => this.onClick(e));
-    this.overlayCanvas.canvas.addEventListener('wheel', e => this.onWheel(e));
+    this.ui.overlayCanvas.addMouseListeners({
+      onMouseDown: this.onMouseDown.bind(this),
+      onMouseMove: this.onMouseMove.bind(this),
+      onMouseUp: this.onMouseUp.bind(this),
+      onClick: this.onClick.bind(this),
+      onWheel: this.onWheel.bind(this)
+    });
 
-    // Keyboard events
-    window.addEventListener('keydown', e => this.onKeyDown(e));
-    window.addEventListener('keyup', e => this.onKeyUp(e));
-  
+    window.addEventListener('keydown', this.onKeyDown.bind(this));
+    window.addEventListener('keyup', this.onKeyUp.bind(this));
   }
 
   initKeyboardShortcuts() {
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
-        this.sectorDialog.hide();
+        this.ui.sectorDialog.hide();
       }
     });
   }
-
 
   setDrawingMode(shape) {
     this.drawingMode = shape;
   }
 
   draw() {
-    this.mainCanvas.clear();
+    this.ui.mainCanvas.clear();
     if (this.imageLoaded) {
-      this.mainCanvas.drawImage(this.image, this.originX, this.originY, this.scale);
+      this.ui.mainCanvas.drawImage(this.image, this.originX, this.originY, this.scale);
     }
-    this.mainCanvas.drawSectors(this.sectors, this.originX, this.originY, this.scale);
+    this.ui.mainCanvas.drawSectors(this.sectors, this.originX, this.originY, this.scale);
     
-    this.overlayCanvas.clear();
-    this.overlayCanvas.drawCurrentShape(this);
-    this.overlayCanvas.drawSectorHighlights(this.sectors, this.originX, this.originY, this.scale);
+    this.ui.overlayCanvas.clear();
+    this.ui.overlayCanvas.drawCurrentShape(this);
+    this.ui.overlayCanvas.drawSectorHighlights(this.sectors, this.originX, this.originY, this.scale);
   }
 
-
   deleteSector(id) {
-    // Remove the sector from the array
     this.sectors = this.sectors.filter((s) => s.id !== id);
-
-    // Remove the row from the table
-    const row = this.sectorRowMap.get(id);
-    if (row) {
-      row.remove();
-      this.sectorRowMap.delete(id);
-    }
-
+    this.ui.rightPanel.removeSectorRow(id);
     this.draw();
   }
 
   focusOnSector(sector) {
     // Calculate the scale to fit the sector into the canvas, with some padding
     const padding = 250; // pixels
-    const canvasWidth = this.mainCanvas.canvas.width;
-    const canvasHeight = this.mainCanvas.canvas.height;
+    const canvasWidth = this.ui.mainCanvas.canvas.width;
+    const canvasHeight = this.ui.mainCanvas.canvas.height;
 
     const scaleX = (canvasWidth - 2 * padding) / sector.width;
     const scaleY = (canvasHeight - 2 * padding) / sector.height;
@@ -138,8 +124,8 @@ export default class SectorTaggerApp {
     const sectorCenterX = sector.x + sector.width / 2;
     const sectorCenterY = sector.y + sector.height / 2;
 
-    const canvasCenterX = this.mainCanvas.canvas.width / 2;
-    const canvasCenterY = this.mainCanvas.canvas.height / 2;
+    const canvasCenterX = this.ui.mainCanvas.canvas.width / 2;
+    const canvasCenterY = this.ui.mainCanvas.canvas.height / 2;
 
     this.originX = canvasCenterX - LEFT_OFFSET - sectorCenterX * this.scale;
     this.originY = canvasCenterY - TOP_OFFSET - sectorCenterY * this.scale;
@@ -184,8 +170,8 @@ export default class SectorTaggerApp {
         this.image = new Image();
         this.image.onload = () => {
           this.imageLoaded = true;
-          this.originX = (this.mainCanvas.canvas.width - this.image.width * this.scale) / 2;
-          this.originY = (this.mainCanvas.canvas.height - this.image.height * this.scale) / 2;
+          this.originX = (this.ui.mainCanvas.canvas.width - this.image.width * this.scale) / 2;
+          this.originY = (this.ui.mainCanvas.canvas.height - this.image.height * this.scale) / 2;
           this.draw();
         };
         this.image.src = e.target.result;
@@ -217,7 +203,7 @@ export default class SectorTaggerApp {
           }
         });
 
-        this.rightPanel.updateSectorList();
+        this.ui.rightPanel.updateSectorList();
         // Load grid settings
         this.gridSettings = data.gridSettings || null;
         if (this.gridSettings) {
@@ -252,10 +238,8 @@ export default class SectorTaggerApp {
     URL.revokeObjectURL(url);
   }
 
-
-
   onMouseDown(e) {
-    const rect = this.overlayCanvas.canvas.getBoundingClientRect();
+    const rect = this.ui.overlayCanvas.canvas.getBoundingClientRect();
     const mouseX = (e.clientX - rect.left - this.originX) / this.scale;
     const mouseY = (e.clientY - rect.top - this.originY) / this.scale;
 
@@ -297,7 +281,7 @@ export default class SectorTaggerApp {
   }
 
   onMouseMove(e) {
-    const rect = this.overlayCanvas.canvas.getBoundingClientRect();
+    const rect = this.ui.overlayCanvas.canvas.getBoundingClientRect();
     const mouseX = (e.clientX - rect.left - this.originX) / this.scale;
     const mouseY = (e.clientY - rect.top - this.originY) / this.scale;
 
@@ -337,14 +321,14 @@ export default class SectorTaggerApp {
             });
           }
 
-          this.coordinateTooltip.show(e.clientX, e.clientY, tooltipContent);
+          this.ui.coordinateTooltip.show(e.clientX, e.clientY, tooltipContent);
         } else {
           sector.hover = false;
         }
       });
 
       if (!hoveringOverSector) {
-        this.coordinateTooltip.hide();
+        this.ui.coordinateTooltip.hide();
       }
 
       this.isHoveringOverSector = hoveringOverSector;
@@ -379,7 +363,7 @@ export default class SectorTaggerApp {
     }
 
     this.isPanning = false;
-    this.coordinateTooltip.hide();
+    this.ui.coordinateTooltip.hide();
     this.sectors.forEach((sector) => (sector.hover = false));
     this.draw();
 
@@ -423,16 +407,15 @@ export default class SectorTaggerApp {
 
     if (newSector) {
       this.sectors.push(newSector);
-      this.rightPanel.updateSectorList();
+      this.ui.rightPanel.updateSectorList();
       this.draw();
       this.editingSector = newSector;
-      this.sectorDialog.open(newSector);
+      this.ui.sectorDialog.open(newSector);
     }
   }
 
-
   onClick(e) {
-    const rect = this.overlayCanvas.canvas.getBoundingClientRect();
+    const rect = this.ui.overlayCanvas.canvas.getBoundingClientRect();
     const mouseX = (e.clientX - rect.left - this.originX) / this.scale;
     const mouseY = (e.clientY - rect.top - this.originY) / this.scale;
 
@@ -440,10 +423,9 @@ export default class SectorTaggerApp {
     if (clickedSector) {
       clickedSector.onClick(e);
       this.editingSector = clickedSector;
-      this.sectorDialog.open(clickedSector);
+      this.ui.sectorDialog.open(clickedSector);
     }
   }
-
 
   onWheel(e) {
     e.preventDefault();
@@ -452,7 +434,7 @@ export default class SectorTaggerApp {
 
     if (newScale < 0.1 || newScale > 10) return;
 
-    const rect = this.overlayCanvas.canvas.getBoundingClientRect();
+    const rect = this.ui.overlayCanvas.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
@@ -490,27 +472,23 @@ export default class SectorTaggerApp {
     }
   }
 
-
-
   saveSectorDialog() {
     if (this.editingSector) {
-      this.editingSector.name = this.sectorDialog.nameInput.value;
-      this.editingSector.color = this.sectorDialog.colorInput.value + '80'; // Add transparency
-      this.editingSector.tags = this.sectorDialog.tagsInput.value
+      this.editingSector.name = this.ui.sectorDialog.nameInput.value;
+      this.editingSector.color = this.ui.sectorDialog.colorInput.value + '80'; // Add transparency
+      this.editingSector.tags = this.ui.sectorDialog.tagsInput.value
         .split(',')
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0);
 
-      this.rightPanel.updateSectorList();
+      this.ui.rightPanel.updateSectorList();
       this.draw();
     }
-    this.sectorDialog.hide();
+    this.ui.sectorDialog.hide();
     this.editingSector = null;
   }
 
   cancelSectorDialog() {
-    this.sectorDialog.hide();
+    this.ui.sectorDialog.hide();
   }
-
-
 }
