@@ -83,6 +83,8 @@ export default class DefaultSectorDialog extends UIComponent {
       this.editingSector.color = color;
       this.editingSector.tags = tags;
     } else {
+      // TODO: handle or dropthis case?
+      console.log('this should never happen');
       const newSector = new Rectangle({
         name,
         color,
@@ -97,6 +99,5 @@ export default class DefaultSectorDialog extends UIComponent {
     this.close();
     this.app.draw();
     this.app.ui.rightPanel.updateSectorList();
-    console.log(this.app.sectors);
-  }
+    }
 }

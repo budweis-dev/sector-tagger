@@ -117,25 +117,25 @@ Sector Tagger comes with default styles, but you can easily customize them to ma
   </style>
 </head>
 <body>
-  <div id="sector-tagger-app" class="sector-tagger-container"></div>
-  <div id="custom-right-panel">
-    <div id="custom-right-panel-content">
+  <div id="sectorTaggerApp" class="sector-tagger-container"></div>
+  <div id="customRightPanel">
+    <div id="customRightPanelContent">
       <!-- custom content here -->
     </div>
   </div>
 
   <script src="dist/sector-tagger.js"></script>
   <script>
-    class CustomRightPanel extends DefaultRightPanel {
+    class CustomRightPanel {
       constructor(app) {
-        super(app);
+        this.app = app;
+        this.render();
       }
 
       // required todo: implement remaining methods of interface UIComponent
 
       render() {
-        super.render();
-        this.panel = document.querySelector('#custom-right-panel');
+        this.panel = document.querySelector('#customRightPanel');
         // custom content here
       }
 
@@ -148,35 +148,23 @@ Sector Tagger comes with default styles, but you can easily customize them to ma
       }
     }
 
-    const container = document.getElementById('sector-tagger-app');
-    const app = new SectorTaggerApp(container, 'uniqueAppId', null, null, null, {
-      rightPanel: new CustomRightPanel(app),
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('sectorTaggerApp');
+      let app;
+      
+      const customRightPanel = new CustomRightPanel(null); 
+
+      app = new SectorTagger.SectorTaggerApp(container, 'uniqueAppId', null, null, null, {
+        rightPanel: customRightPanel,
+      });
+
+      customRightPanel.app = app;
     });
   </script>
 </body>
 </html>
 ```
 
-## Customization:
-### Custom Right Panel
-
-```javascript
-class CustomRightPanel extends DefaultRightPanel {
-  constructor(app) {
-    super(app);
-  }
-
-  render() {
-    super.render();
-    this.panel = document.querySelector('#custom-right-panel');
-    // Add your custom content here
-  }
-}
-
-const app = new SectorTaggerApp(container, 'uniqueAppId', null, null, null, {
-  rightPanel: new CustomRightPanel(app),
-});
-```
 
 
 <!-- ## Contributing

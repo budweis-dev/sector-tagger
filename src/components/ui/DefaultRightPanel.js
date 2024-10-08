@@ -98,7 +98,7 @@ export default class DefaultRightPanel extends UIComponent {
         `;
         tbody.appendChild(row);
 
-        row.querySelector('.edit-button').addEventListener('click', () => this.app.sectorDialog.open(sector));
+        row.querySelector('.edit-button').addEventListener('click', () => this.app.ui.sectorDialog.open(sector));
         row.querySelector('.delete-button').addEventListener('click', () => this.deleteSector(sector));
         row.querySelector('.sector-select').addEventListener('change', (e) => {
           sector.selected = e.target.checked;

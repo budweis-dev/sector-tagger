@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Sector Tagger Demo</title>
   <style>
-    @import url('dist/styles.css');
+    @import url('../dist/styles.css');
     .sector-tagger-container {
       width: 800px;
       height: 600px;
@@ -15,11 +15,11 @@
 </head>
 <body>
 
-  <div id="sector-tagger-app" class="sector-tagger-container"></div>
+  <div id="sectorTaggerApp" class="sector-tagger-container"></div>
   
-  <script src="dist/sector-tagger.js"></script>
+  <script src="../dist/sector-tagger.js"></script>
   <script>
-    const container = document.getElementById('sector-tagger-app');
+    const container = document.getElementById('sectorTaggerApp');
     const app = new SectorTagger.SectorTaggerApp(container, 'uniqueAppId');
   </script>
 
