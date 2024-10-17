@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Sector Tagger Demo</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    @import url('../../dist/styles.css');
+    .sector-tagger-container {
+      width: 100%;
+      height: calc(100vh - 400px);
+      border: 1px solid #ccc;
+      position: relative;
+    }
+    #rightDrawingPanel .panel-header {
+      justify-content: start !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <h1>Sector Tagger Demo</h1>
+        <p>This is a demo of my Sector Tagger library.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div id="sectorTaggerApp" class="sector-tagger-container"></div>
+
+      <div id="customSectorDialog" class="card" style="display: none;">
+        <div id="sectorDialogTitle" class="card-header">Add/Edit Sector</div>
+          <form id="sectorDialogForm" class="card-body">
+            <div>
+              <label>Name: </label>
+              <input type="text" id="dialogSectorName">
+            </div>
+            <div id="sectorMetadata">
+
+            </div>
+            <div>
+              <label>Tags: </label>
+              <input type="text" id="dialogSectorTags" placeholder="Comma-separated">
+            </div>
+            <hr>
+            <div>
+              <button id="dialogSaveSectorButton">Save Sector</button>
+              <button id="dialogCancelButton">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../../dist/sector-tagger.js"></script>
+  <script src="./dialog.js"></script>
+  <script src="./main.js"></script>
+
+</body>
+</html>

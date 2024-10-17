@@ -7,13 +7,59 @@ import DefaultDrawingShapeSelector from './ui/DefaultDrawingShapeSelector';
 import RectangleSector from '../shapes/RectangleSector';
 import CircleSector from '../shapes/CircleSector';
 import PolygonSector from '../shapes/PolygonSector';
+import SectorTaggerApi from './Api';
+import SectorFactory from '../helpers/SectorFactory';
 
 export default class SectorTaggerApp {
-  constructor(containerElement, appId, fetchImgUrl, fetchSectorsUrl, onAddToCartCallback, uiComponents = {}) {
+  constructor(containerElement, config = {}) {
     this.container = containerElement;
-    this.appId = appId;
 
-    // State variables
+    this.sectorFactory = new SectorFactory(this);
+    this.config = this.mergeConfig(config);
+    this.api = new SectorTaggerApi(this);
+
+    this.initState();
+    this.initUI();
+    this.initEventListeners();
+    this.initKeyboardShortcuts();
+  }
+
+  mergeConfig(config) {
+    const defaultConfig = {
+      appId: 'defaultAppId',
+      fetchImgUrl: null,
+      fetchSectorsUrl: null,
+      onAddToCartCallback: null,
+      macCtrlReplace: true, //todo: make it work :D
+      keyBindings: {
+        toggleGrid: 'g',
+        undo: 'z',
+        redo: 'y',
+        delete: 'Delete',
+        escape: 'Escape',
+        ctrl: 'Control',
+        fullscreen: 'F11',
+        save: 'Enter',
+        cancel: 'Escape',
+        add: 'Enter',
+        drawingShapeSelector: 's',
+        move: 'Space',
+        zoomIn: 'ArrowUp',
+        zoomOut: 'ArrowDown',
+        pan: 'p',
+        zoomReset: 'r'
+      },
+      drawingModes: ['rectangle', 'circle', 'polygon'],
+      defaultDrawingMode: 'rectangle',
+      gridSettings: null,
+      uiComponents: {},
+      customEventHandlers: {}
+    };
+
+    return { ...defaultConfig, ...config };
+  }
+
+  initState() {
     this.sectorRowMap = new Map();
     this.image = new Image();
     this.imageLoaded = false;
@@ -28,7 +74,7 @@ export default class SectorTaggerApp {
     this.selectionStartY = 0;
     this.selectionRect = {};
     this.sectors = [];
-    this.gridSettings = null;
+    this.gridSettings = this.config.gridSettings || null;
     this.editingSector = null;
     this.isCtrlPressed = false;
     this.isHoveringOverSector = false;
@@ -38,26 +84,20 @@ export default class SectorTaggerApp {
     this.dragStartX = 0;
     this.dragStartY = 0;
 
-    this.fetchImgUrl = fetchImgUrl;
-    this.fetchSectorsUrl = fetchSectorsUrl;
-    this.onAddToCartCallback = onAddToCartCallback;
-
     this.drawingMode = 'circle';
     this.isDrawingPolygon = false;
     this.polygonPoints = [];
+  }
 
-    // UI components
+  initUI() {
     this.ui = {
-      mainCanvas: uiComponents.mainCanvas || new DefaultMainCanvas(this),
-      overlayCanvas: uiComponents.overlayCanvas || new DefaultOverlayCanvas(this),
-      sectorDialog: uiComponents.sectorDialog || new DefaultSectorDialog(this),
-      rightPanel: uiComponents.rightPanel || new DefaultRightPanel(this),
-      coordinateTooltip: uiComponents.coordinateTooltip || new DefaultCoordinateTooltip(this),
-      drawingShapeSelector: uiComponents.drawingShapeSelector || new DefaultDrawingShapeSelector(this)
+      mainCanvas: this.config.uiComponents.mainCanvas || new DefaultMainCanvas(this),
+      overlayCanvas: this.config.uiComponents.overlayCanvas || new DefaultOverlayCanvas(this),
+      sectorDialog: this.config.uiComponents.sectorDialog || new DefaultSectorDialog(this),
+      rightPanel: this.config.uiComponents.rightPanel || new DefaultRightPanel(this),
+      coordinateTooltip: this.config.uiComponents.coordinateTooltip || new DefaultCoordinateTooltip(this),
+      drawingShapeSelector: this.config.uiComponents.drawingShapeSelector || new DefaultDrawingShapeSelector(this)
     };
-
-    this.initEventListeners();
-    this.initKeyboardShortcuts();
   }
 
   initEventListeners() {
@@ -68,16 +108,64 @@ export default class SectorTaggerApp {
       onClick: this.onClick.bind(this),
       onWheel: this.onWheel.bind(this)
     });
-
-    window.addEventListener('keydown', this.onKeyDown.bind(this));
-    window.addEventListener('keyup', this.onKeyUp.bind(this));
   }
 
   initKeyboardShortcuts() {
+
+    document.addEventListener('keyup', e => {
+      if (this.config.macCtrlReplace && e.metaKey) {
+        this.isCtrlPressed = false;
+      } else if (e.key === this.config.keyBindings.ctrl) {
+        this.isCtrlPressed = false;
+      }
+
+      if (this.config.customEventHandlers.onKeyUp) {
+        this.config.customEventHandlers.onKeyUp(e, this);
+      }
+    });
+
+
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
+      if (this.config.macCtrlReplace && e.metaKey) {
+        this.isCtrlPressed = true;
+      } else if (e.key === this.config.keyBindings.ctrl) {
+        this.isCtrlPressed = true;
+      }
+
+      if (this.config.customEventHandlers.onKeyDown) {
+        this.config.customEventHandlers.onKeyDown(e, this);
+      } else if (e.key === this.config.keyBindings.escape) {
         this.ui.sectorDialog.hide();
       }
+
+      if (e.key === this.config.keyBindings.undo) {
+        this.api.undo();
+      }
+      if (e.key === this.config.keyBindings.redo) {
+        this.api.redo();
+      }
+      if (e.key === this.config.keyBindings.delete) {
+        this.api.deleteSector(this.editingSector.id);
+      }
+      if (e.key === this.config.keyBindings.toggleGrid) {
+        this.api.toggleGrid();
+      }
+      if (e.key === this.config.keyBindings.fullscreen) {
+        this.api.toggleFullscreen();
+      }
+      if (e.key === this.config.keyBindings.save) {
+        this.saveSectorDialog();
+      }
+      if (e.key === this.config.keyBindings.cancel) {
+        this.api.cancelSectorDialog();
+      }
+      if (e.key === this.config.keyBindings.add) {
+        this.api.createSector();
+      }
+      if (e.key === this.config.keyBindings.drawingShapeSelector) {
+        this.setDrawingMode(e.key);
+      }
+
     });
   }
 
@@ -91,7 +179,7 @@ export default class SectorTaggerApp {
       this.ui.mainCanvas.drawImage(this.image, this.originX, this.originY, this.scale);
     }
     this.ui.mainCanvas.drawSectors(this.sectors, this.originX, this.originY, this.scale);
-    
+
     this.ui.overlayCanvas.clear();
     this.ui.overlayCanvas.drawCurrentShape(this);
     this.ui.overlayCanvas.drawSectorHighlights(this.sectors, this.originX, this.originY, this.scale);
@@ -226,7 +314,7 @@ export default class SectorTaggerApp {
     };
 
     const dataStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([dataStr], {type: 'application/json'});
+    const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement('a');
@@ -369,40 +457,47 @@ export default class SectorTaggerApp {
 
   }
 
-  createSector() {
+  createSector(sectorData = null) {
     let newSector;
-    if (this.drawingMode === 'rectangle') {
-      newSector = new RectangleSector({
-        id: Date.now(),
-        name: `Sector ${this.sectors.length + 1}`,
-        color: '#ffff0080',
-        x: this.selectionRect.x,
-        y: this.selectionRect.y,
-        width: this.selectionRect.width,
-        height: this.selectionRect.height,
-        tags: [],
-      });
-    } else if (this.drawingMode === 'circle') {
-      const radius = Math.sqrt(
-        Math.pow(this.selectionRect.width, 2) + Math.pow(this.selectionRect.height, 2)
-      );
-      newSector = new CircleSector({
-        id: Date.now(),
-        name: `Sector ${this.sectors.length + 1}`,
-        color: '#ffff0080',
-        centerX: this.selectionStartX,
-        centerY: this.selectionStartY,
-        radius: radius,
-        tags: [],
-      });
-    } else if (this.drawingMode === 'polygon') {
-      newSector = new PolygonSector({
-        id: Date.now(),
-        name: `Sector ${this.sectors.length + 1}`,
-        color: '#ffff0080',
-        points: this.polygonPoints,
-        tags: [],
-      });
+    if (sectorData != null) {
+      newSector = this.sectorFactory.createSector(sectorData);
+    } else {
+      if (this.drawingMode === 'rectangle') {
+        newSector = this.sectorFactory.createSector({
+          type: 'rectangle',
+          id: Date.now(),
+          name: `Sector ${this.sectors.length + 1}`,
+          color: '#ffff0080',
+          x: this.selectionRect.x,
+          y: this.selectionRect.y,
+          width: this.selectionRect.width,
+          height: this.selectionRect.height,
+          tags: [],
+        });
+      } else if (this.drawingMode === 'circle') {
+        const radius = Math.sqrt(
+          Math.pow(this.selectionRect.width, 2) + Math.pow(this.selectionRect.height, 2)
+        );
+        newSector = this.sectorFactory.createSector({
+          type: 'circle',
+          id: Date.now(),
+          name: `Sector ${this.sectors.length + 1}`,
+          color: '#ffff0080',
+          centerX: this.selectionStartX,
+          centerY: this.selectionStartY,
+          radius: radius,
+          tags: [],
+        });
+      } else if (this.drawingMode === 'polygon') {
+        newSector = this.sectorFactory.createSector({
+          type: 'polygon',
+          id: Date.now(),
+          name: `Sector ${this.sectors.length + 1}`,
+          color: '#ffff0080',
+          points: this.polygonPoints,
+          tags: [],
+        });
+      }
     }
 
     if (newSector) {
@@ -460,11 +555,6 @@ export default class SectorTaggerApp {
     }
   }
 
-  onKeyDown(e) {
-    if (e.key === 'Control') {
-      this.isCtrlPressed = true;
-    }
-  }
 
   onKeyUp(e) {
     if (e.key === 'Control') {
@@ -487,7 +577,6 @@ export default class SectorTaggerApp {
     this.ui.sectorDialog.hide();
     this.editingSector = null;
   }
-
   cancelSectorDialog() {
     this.ui.sectorDialog.hide();
   }
