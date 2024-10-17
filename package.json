@@ -2,6 +2,21 @@
     "name": "sector-tagger",
     "version": "1.0.0",
     "description": "A canvas sector tagging library supporting rectangles, circles, and polygons.",
+    "keywords": [
+        "sector",
+        "tag",
+        "tagging",
+        "area",
+        "region",
+        "selection",
+        "canvas",
+        "drawing",
+        "library",
+        "shape",
+        "rectangles",
+        "circles",
+        "polygons"
+    ],
     "main": "src/index.js",
     "scripts": {
         "build-rol": "rollup -c",
