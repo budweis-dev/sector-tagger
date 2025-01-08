@@ -1,0 +1,21 @@
+{
+  "name": "image-tagger",
+  "version": "1.0.0",
+  "description": "Tag sectors within views inside of set of images",
+  "main": "app.tsx",
+  "scripts": {
+    "start": "esbuild app.tsx --bundle --servedir=www/ --outdir=www/js",
+    "build": "esbuild app.tsx --bundle --minify --outdir=www/js"
+  },
+  "author": "pazny.develop@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "@types/react": "^19.0.3",
+    "@types/react-dom": "^19.0.2",
+    "esbuild": "^0.24.2",
+    "konva": "^9.3.18",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-konva": "^19.0.2"
+  }
+}
