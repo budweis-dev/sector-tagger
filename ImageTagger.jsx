@@ -1,6 +1,10 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Stage, Layer, Rect, Group, Transformer, Image } from 'react-konva';
 import ControlPanel from './ControlPanel';
+import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from './mockApi';
+
+const queryClient = new QueryClient();
 
 const Sector = ({ 
   x, 
@@ -48,7 +52,7 @@ const Sector = ({
         strokeWidth={2}
         onClick={onClick}
         onTap={onClick}
-        draggable
+        draggable={level === 'sector' || level === 'view'}
         name={name}
         scaleX={absoluteScale}
         scaleY={absoluteScale}
@@ -79,23 +83,23 @@ const Sector = ({
             height,
           });
         }}
-        onTransformEnd={(e) => {
-          const node = shapeRef.current;
-          const scaleX = node.scaleX() / parentScale;
-          const scaleY = node.scaleY() / parentScale;
+        // onTransformEnd={(e) => {
+        //   const node = shapeRef.current;
+        //   const scaleX = node.scaleX() / parentScale;
+        //   const scaleY = node.scaleY() / parentScale;
           
-          node.scaleX(parentScale);
-          node.scaleY(parentScale);
+        //   node.scaleX(parentScale);
+        //   node.scaleY(parentScale);
           
-          onTransform({
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(5, width * scaleX),
-            height: Math.max(5, height * scaleY),
-          });
-        }}
+        //   onTransform({
+        //     x: node.x(),
+        //     y: node.y(),
+        //     width: Math.max(5, width * scaleX),
+        //     height: Math.max(5, height * scaleY),
+        //   });
+        // }}
       />
-      {isSelected && (
+      {/* {isSelected && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
@@ -115,7 +119,7 @@ const Sector = ({
             return newBox;
           }}
         />
-      )}
+      )} */}
     </>
   );
 };
@@ -124,7 +128,6 @@ const View = ({ data, isSelected, onSelect, onUpdate, parentScale = 1, parentBou
   // Vypočítáme celkové měřítko pro potomky
   const totalScale = parentScale * (data.scale || 1);
   
-  // Definujeme hranice pro sektory
   const viewBounds = {
     x: data.x,
     y: data.y,
@@ -182,7 +185,6 @@ const Page = ({ data, selectedId, onSelect, onUpdate }) => {
     }
   }, [data.backgroundImage]);
 
-  // Definujeme hranice pro views
   const pageBounds = {
     x: data.x,
     y: data.y,
@@ -231,10 +233,20 @@ const Page = ({ data, selectedId, onSelect, onUpdate }) => {
   );
 };
 
-
 const ImageTagger = () => {
-  const [pages, setPages] = useState([
-    {
+  const [selectedId, setSelectedId] = useState(null);
+  const queryClient = useQueryClient();
+
+  // Fetch pages using useQuery
+  const { 
+    isLoading, 
+    isError, 
+    data: pages = [], 
+    error 
+  } = useQuery({
+    queryKey: ['pages'],
+    queryFn: api.fetchPages,
+    initialData: [{
       id: 'page1',
       name: 'Page 1',
       x: 10,
@@ -266,71 +278,48 @@ const ImageTagger = () => {
           ]
         }
       ]
-    }
-  ]);
+    }]
+  });
 
-  const [selectedId, setSelectedId] = useState(null);
+  // Update mutation
+  const { mutate: updatePageMutation } = useMutation({
+    mutationFn: api.updatePage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages'] });
+    }
+  });
+
+  // Tags mutation
+  const { mutate: updateTagsMutation } = useMutation({
+    mutationFn: api.updateTags,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages'] });
+    }
+  });
+
+  // Image upload mutation
+  const { mutate: uploadImageMutation } = useMutation({
+    mutationFn: api.uploadImage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages'] });
+    }
+  });
 
   const handleSelect = useCallback((id) => {
     setSelectedId(id);
   }, []);
 
   const handleUpdate = useCallback((id, newAttrs) => {
-    setPages(prevPages => {
-      const newPages = JSON.parse(JSON.stringify(prevPages));
-      const updateObject = (items) => {
-        for (let item of items) {
-          if (item.id === id) {
-            Object.assign(item, newAttrs);
-            return true;
-          }
-          if (item.views) {
-            if (updateObject(item.views)) return true;
-          }
-          if (item.sectors) {
-            if (updateObject(item.sectors)) return true;
-          }
-        }
-        return false;
-      };
-      updateObject(newPages);
-      return newPages;
-    });
-  }, []);
+    updatePageMutation({ id, data: newAttrs });
+  }, [updatePageMutation]);
 
   const handleUpdateTags = useCallback((id, newTags) => {
-    setPages(prevPages => {
-      const newPages = JSON.parse(JSON.stringify(prevPages));
-      const updateObject = (items) => {
-        for (let item of items) {
-          if (item.id === id) {
-            item.tags = newTags;
-            return true;
-          }
-          if (item.views) {
-            if (updateObject(item.views)) return true;
-          }
-          if (item.sectors) {
-            if (updateObject(item.sectors)) return true;
-          }
-        }
-        return false;
-      };
-      updateObject(newPages);
-      return newPages;
-    });
-  }, []);
+    updateTagsMutation({ id, tags: newTags });
+  }, [updateTagsMutation]);
 
-  const handleImageUpload = useCallback((pageId, imageUrl) => {
-    setPages(prevPages => {
-      const newPages = JSON.parse(JSON.stringify(prevPages));
-      const page = newPages.find(p => p.id === pageId);
-      if (page) {
-        page.backgroundImage = imageUrl;
-      }
-      return newPages;
-    });
-  }, []);
+  const handleImageUpload = useCallback((pageId, imageData) => {
+    uploadImageMutation({ pageId, imageData });
+  }, [uploadImageMutation]);
 
   const handleExport = useCallback(() => {
     const dataStr = JSON.stringify(pages, null, 2);
@@ -347,14 +336,14 @@ const ImageTagger = () => {
 
   const handleImport = useCallback((data) => {
     if (Array.isArray(data)) {
-      setPages(data);
+      queryClient.setQueryData(['pages'], data);
     } else if (data.pages) {
-      setPages(data.pages);
+      queryClient.setQueryData(['pages'], data.pages);
     }
-  }, []);
+  }, [queryClient]);
 
   const findSelectedObject = useCallback(() => {
-    if (!selectedId) return null;
+    if (!selectedId || !pages) return null;
     
     const findInItems = (items) => {
       for (let item of items) {
@@ -377,6 +366,7 @@ const ImageTagger = () => {
   }, [selectedId, pages]);
 
   const findSelectedPage = useCallback(() => {
+    if (!pages?.length) return null;
     if (!selectedId) return pages[0];
     
     return pages.find(page => {
@@ -386,6 +376,14 @@ const ImageTagger = () => {
       );
     });
   }, [selectedId, pages]);
+
+  if (isLoading) {
+    return <div className="w-full h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (isError) {
+    return <div className="w-full h-screen flex items-center justify-center text-red-500">Error: {error.message}</div>;
+  }
 
   return (
     <div className="w-full h-screen bg-gray-100 relative">
@@ -400,13 +398,16 @@ const ImageTagger = () => {
       <Stage 
         width={window.innerWidth} 
         height={window.innerHeight}
-        className="bg-white"
+        className="bg-white h-screen"
       >
         <Layer>
-          {pages.map((page) => (
+          {pages.map((page, index) => (
             <Page
               key={page.id}
-              data={page}
+              data={{
+                ...page,
+                y: index * (page.height + 50) + 10 // 50 spacing
+              }}
               selectedId={selectedId}
               onSelect={handleSelect}
               onUpdate={handleUpdate}
@@ -418,4 +419,12 @@ const ImageTagger = () => {
   );
 };
 
-export default ImageTagger;
+const ImageTaggerApp = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ImageTagger />
+    </QueryClientProvider>
+  );
+};
+
+export default ImageTaggerApp;
