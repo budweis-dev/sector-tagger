@@ -83,23 +83,23 @@ const Sector = ({
             height,
           });
         }}
-        // onTransformEnd={(e) => {
-        //   const node = shapeRef.current;
-        //   const scaleX = node.scaleX() / parentScale;
-        //   const scaleY = node.scaleY() / parentScale;
+        onTransformEnd={(e) => {
+          const node = shapeRef.current;
+          const scaleX = node.scaleX() / parentScale;
+          const scaleY = node.scaleY() / parentScale;
           
-        //   node.scaleX(parentScale);
-        //   node.scaleY(parentScale);
+          node.scaleX(parentScale);
+          node.scaleY(parentScale);
           
-        //   onTransform({
-        //     x: node.x(),
-        //     y: node.y(),
-        //     width: Math.max(5, width * scaleX),
-        //     height: Math.max(5, height * scaleY),
-        //   });
-        // }}
+          onTransform({
+            x: node.x(),
+            y: node.y(),
+            width: Math.max(5, width * scaleX),
+            height: Math.max(5, height * scaleY),
+          });
+        }}
       />
-      {/* {isSelected && (
+      {isSelected && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
@@ -119,7 +119,7 @@ const Sector = ({
             return newBox;
           }}
         />
-      )} */}
+      )}
     </>
   );
 };
