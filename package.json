@@ -1,6 +1,20 @@
 {
 	"name": "svelte-tagger",
 	"version": "0.0.1",
+	"description": "A Svelte component for tagging sectors and regions in images or documents",
+	"author": "pazny",
+	"license": "MIT",
+	"keywords": [
+		"svelte",
+		"tagger",
+		"sector",
+		"annotation",
+		"regions"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/budweis-dev/sector-tagger"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -27,7 +41,9 @@
 		}
 	},
 	"peerDependencies": {
-		"svelte": "^5.0.0"
+		"svelte": "^5.0.0",
+		"konva": "^9.3.0",
+		"svelte-konva": "^0.3.1"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^4.0.0",
@@ -38,6 +54,8 @@
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
 		"typescript": "^5.0.0",
-		"vite": "^5.4.11"
+		"vite": "^5.4.11",
+		"konva": "^9.3.0",
+		"svelte-konva": "^0.3.1"
 	}
 }
