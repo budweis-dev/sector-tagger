@@ -4,6 +4,7 @@
   import { Layer, Rect, Transformer } from 'svelte-konva';
   import type { KonvaEventObject, Node, RectConfig, TransformerConfig } from 'konva';
 
+  export let id: number;
   export let x: number;
   export let y: number;
   export let width: number;
@@ -17,6 +18,7 @@
   export let name: string;
   export let level: 'page' | 'view' | 'sector' = 'sector';
   export let parentBounds: { x: number; y: number; width: number; height: number };
+  export let customData: Record<string, any> | undefined = undefined;
 
   let shapeRef: any;
   let trRef: any;

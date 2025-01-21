@@ -3,9 +3,10 @@
 </script>
 
 <script lang="ts">
-  // import { onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { Stage } from 'svelte-konva';
   import { Sector } from '../../src';
+  import { fetchSectors } from '../../src';
   import type { SectorData } from '../../src';
   import type { KonvaEventObject, Node } from 'konva';
   import type { NodeConfig } from 'konva/lib/Node';
@@ -23,7 +24,14 @@
       y: 50,
       width: 700,
       height: 500,
-      level: 'page'
+      level: 'page',
+      customData: {
+        description: 'This is a custom description for the page',
+        metadata: {
+          createdAt: new Date().toISOString(),
+          author: 'Example User'
+        }
+      }
     },
     {
       id: 2,
@@ -32,27 +40,36 @@
       y: 100,
       width: 600,
       height: 400,
-      level: 'view'
+      level: 'view',
+      customData: {
+        description: 'This is a custom description for the view',
+        metadata: {
+          createdAt: new Date().toISOString(),
+          author: 'Example User'
+        }
+      }
     },
     {
       id: 3,
-      name: 'Example Sector 1',
+      name: 'Example Sector',
       x: 150,
       y: 150,
-      width: 200,
-      height: 150,
-      level: 'sector'
-    },
-    {
-      id: 4,
-      name: 'Example Sector 2',
-      x: 400,
-      y: 150,
-      width: 200,
-      height: 150,
-      level: 'sector'
+      width: 400,
+      height: 300,
+      level: 'sector',
+      customData: {
+        description: 'This is a custom description for the sector',
+        metadata: {
+          createdAt: new Date().toISOString(),
+          author: 'Example User'
+        }
+      }
     }
   ];
+
+  onMount(() => {
+    fetchSectors();
+  });
 
   function handleClick(sector: SectorData, detail: KonvaEventObject<MouseEvent>) {
     selectedSectorId = sector.id;
@@ -100,7 +117,14 @@
       y,
       width,
       height,
-      level
+      level,
+      customData: {
+        description: `This is a custom description for the ${level}`,
+        metadata: {
+          createdAt: new Date().toISOString(),
+          author: 'Example User'
+        }
+      }
     }];
   }
 
@@ -179,6 +203,9 @@
           <p>Name: {sector.name}</p>
           <p>Position: ({sector.x.toFixed(0)}, {sector.y.toFixed(0)})</p>
           <p>Size: {sector.width.toFixed(0)} × {sector.height.toFixed(0)}</p>
+          <p>Description: {sector.customData.description}</p>
+          <p>Created At: {sector.customData.metadata.createdAt}</p>
+          <p>Author: {sector.customData.metadata.author}</p>
         {/each}
       {/if}
     </div>
@@ -193,6 +220,9 @@
           <p>Name: {sector.name}</p>
           <p>Position: ({sector.x.toFixed(0)}, {sector.y.toFixed(0)})</p>
           <p>Size: {sector.width.toFixed(0)} × {sector.height.toFixed(0)}</p>
+          <p>Description: {sector.customData.description}</p>
+          <p>Created At: {sector.customData.metadata.createdAt}</p>
+          <p>Author: {sector.customData.metadata.author}</p>
         {/each}
       {/if}
     </div>
