@@ -10,8 +10,10 @@
   export let height: number;
   export let color: string = '#ff000080';
   export let isSelected: boolean;
+  export let isHovering: boolean;
   export let onClick: (e: KonvaEventObject<MouseEvent>) => void;
   export let onTransform: (bounds: { x: number; y: number; width: number; height: number }) => void;
+  export let onHover: (e: KonvaEventObject<MouseEvent>) => void;
   export let name: string;
   export let level: 'page' | 'view' | 'sector' = 'sector';
   export let parentBounds: { x: number; y: number; width: number; height: number };
@@ -54,7 +56,7 @@
     width,
     height,
     fill: color,
-    stroke: borderColors[level],
+    // stroke: borderColors[level],
     strokeWidth: 2,
     draggable: level === 'sector' || level === 'view',
     name
@@ -87,9 +89,10 @@
     on:click={onClick}
     on:tap={onClick}
     on:transformend={handleTransformEnd}
+    on:mouseenter={onHover}
   />
 
-  {#if isSelected}
+  {#if isHovering}
     <Transformer
       bind:this={trRef}
       config={transformerConfig}

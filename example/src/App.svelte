@@ -13,7 +13,8 @@
   export let stageWidth = 800;
   export let stageHeight = 600;
   export let selectedSectorId: number | null = null;
-  
+  export let hoveredSectorId: number | null = null;
+
   export let sectors: SectorData[] = [
     {
       id: 1,
@@ -55,6 +56,10 @@
 
   function handleClick(sector: SectorData, detail: KonvaEventObject<MouseEvent>) {
     selectedSectorId = sector.id;
+  }
+
+  function handleHover(sector: SectorData, detail: KonvaEventObject<MouseEvent>) {
+    hoveredSectorId = sector.id;
   }
 
   function handleTransform(sector: SectorData, detail: any) {
@@ -155,7 +160,9 @@
                  sector.level === 'view' ? '#0000ff20' : 
                  '#ff000020'}
           isSelected={selectedSectorId === sector.id}
+          isHovering={hoveredSectorId === sector.id}
           onClick={e => handleClick(sector, e)}
+          onHover={e => handleHover(sector, e)}
           onTransform={transform => handleTransform(sector, transform)}
           parentBounds={getParentBounds(sector)}
         />
@@ -168,6 +175,20 @@
       <h3>Selected Element Info</h3>
       {#if sectors}
         {#each sectors.filter(s => s.id === selectedSectorId) as sector}
+          <p>Type: {sector.level}</p>
+          <p>Name: {sector.name}</p>
+          <p>Position: ({sector.x.toFixed(0)}, {sector.y.toFixed(0)})</p>
+          <p>Size: {sector.width.toFixed(0)} × {sector.height.toFixed(0)}</p>
+        {/each}
+      {/if}
+    </div>
+  {/if}
+
+  {#if hoveredSectorId !== null}
+    <div class="info">
+      <h3>Hovered Element Info</h3>
+      {#if sectors}
+        {#each sectors.filter(s => s.id === hoveredSectorId) as sector}
           <p>Type: {sector.level}</p>
           <p>Name: {sector.name}</p>
           <p>Position: ({sector.x.toFixed(0)}, {sector.y.toFixed(0)})</p>
