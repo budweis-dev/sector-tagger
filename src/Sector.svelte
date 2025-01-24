@@ -16,8 +16,9 @@
   export let onTransform: (bounds: { x: number; y: number; width: number; height: number }) => void;
   export let onHover: (e: KonvaEventObject<MouseEvent>) => void;
   export let name: string;
+  export let parentId: number | null = null;
   export let level: 'page' | 'view' | 'sector' = 'sector';
-  export let parentBounds: { x: number; y: number; width: number; height: number };
+  export let parentBounds: { x: number; y: number; width: number; height: number; scale?: number; rotation?: number } | null = null;
   export let customData: Record<string, any> | undefined = undefined;
 
   let shapeRef: any;
@@ -29,6 +30,11 @@
     sector: '#ff0000'
   } as const;
 
+  $: effectiveX = parentBounds ? x + parentBounds.x : x;
+  $: effectiveY = parentBounds ? y + parentBounds.y : y;
+  $: effectiveScale = parentBounds?.scale || 1;
+  $: effectiveRotation = parentBounds?.rotation || 0;
+
   onMount(() => {
     if (isSelected && trRef) {
       trRef.nodes([shapeRef]);
@@ -38,30 +44,35 @@
 
   const handleTransformEnd = (e: KonvaEventObject<Event>) => {
     const node = shapeRef;
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
+    const scaleX = node.scaleX() / effectiveScale;
+    const scaleY = node.scaleY() / effectiveScale;
+    const rotation = node.rotation() - effectiveRotation;
 
-    node.scaleX(1);
-    node.scaleY(1);
+    node.scaleX(effectiveScale);
+    node.scaleY(effectiveScale);
+    node.rotation(effectiveRotation);
 
     onTransform({
-      x: node.x(),
-      y: node.y(),
+      x: parentBounds ? node.x() - parentBounds.x : node.x(),
+      y: parentBounds ? node.y() - parentBounds.y : node.y(),
       width: Math.max(5, node.width() * scaleX),
       height: Math.max(5, node.height() * scaleY)
     });
   };
 
   const rectConfig: RectConfig = {
-    x,
-    y,
+    x: effectiveX,
+    y: effectiveY,
     width,
     height,
     fill: color,
-    // stroke: borderColors[level],
+    stroke: borderColors[level],
     strokeWidth: 2,
     draggable: level === 'sector' || level === 'view',
-    name
+    name,
+    scaleX: effectiveScale,
+    scaleY: effectiveScale,
+    rotation: effectiveRotation
   };
 
   const transformerConfig: TransformerConfig = {
@@ -70,10 +81,10 @@
       if (
         box.width < 5 ||
         box.height < 5 ||
-        box.x < parentBounds.x ||
-        box.y < parentBounds.y ||
-        box.x + box.width > parentBounds.x + parentBounds.width ||
-        box.y + box.height > parentBounds.y + parentBounds.height
+        box.x < parentBounds?.x ||
+        box.y < parentBounds?.y ||
+        box.x + box.width > parentBounds?.x + parentBounds?.width ||
+        box.y + box.height > parentBounds?.y + parentBounds?.height
       ) {
         return oldBox;
       }

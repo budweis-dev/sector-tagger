@@ -25,6 +25,7 @@
       width: 700,
       height: 500,
       level: 'page',
+      parentId: null,
       customData: {
         description: 'This is a custom description for the page',
         metadata: {
@@ -41,6 +42,7 @@
       width: 600,
       height: 400,
       level: 'view',
+      parentId: 1,
       customData: {
         description: 'This is a custom description for the view',
         metadata: {
@@ -54,9 +56,10 @@
       name: 'Example Sector',
       x: 150,
       y: 150,
-      width: 400,
-      height: 300,
+      width: 200,
+      height: 150,
       level: 'sector',
+      parentId: 2,
       customData: {
         description: 'This is a custom description for the sector',
         metadata: {
@@ -118,6 +121,7 @@
       width,
       height,
       level,
+      parentId: level === 'sector' ? 2 : level === 'view' ? 1 : null,
       customData: {
         description: `This is a custom description for the ${level}`,
         metadata: {
